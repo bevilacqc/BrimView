@@ -1,4 +1,5 @@
 import panel as pn
+import panel_material_ui as pmui
 import param
 
 from .environment import is_running_from_docker
@@ -13,6 +14,7 @@ from .s3file_selector import S3FileSelector
 
 from .utils import catch_and_notify
 from .logging import logger
+from .widgets import CustomPMuiCard
 
 def load_file_dialog() -> str | None:
     file_path_out = None
@@ -78,13 +80,13 @@ class TinkerFileSelector(pn.viewable.Viewer):
         self.local_file = None
 
         # Filedialog button
-        self.filedialog_button = pn.widgets.Button(
-            name="Click me to select a file", button_type="primary", width=200
+        self.filedialog_button = pmui.Button(
+            label="Click me to select a file", color="primary", width=200
         )
         self.filedialog_button.on_click(self._select_file_dialog)
 
-        self.dragNdrop_button = pn.widgets.Button(
-            name="Click me to drag and drop a file", button_type="primary", width=200
+        self.dragNdrop_button = pmui.Button(
+            label="Click me to drag and drop a file", color="primary", width=200
         )
         self.dragNdrop_button.on_click(self._drag_and_drop_dialog)
 
@@ -148,7 +150,7 @@ class TinkerFileSelector(pn.viewable.Viewer):
 
     def __panel__(self):
         if not _running_from_docker:
-            local_data_widget = pn.Card(
+            local_data_widget = CustomPMuiCard(
                     self.filedialog_button,
                     self.dragNdrop_button,
                     title="Local data",
@@ -156,7 +158,7 @@ class TinkerFileSelector(pn.viewable.Viewer):
 
                 )
         else:
-            local_data_widget = pn.Card(
+            local_data_widget = CustomPMuiCard(
                     pn.pane.HTML("<a href='https://biobrillouin.org/brimview-local/'>Load in-browser version</a>"),
                     title="Local data",
                     margin=5,
@@ -166,7 +168,7 @@ class TinkerFileSelector(pn.viewable.Viewer):
 
         return pn.FlexBox(
             local_data_widget, 
-            pn.Card(
+            CustomPMuiCard(
                 self.s3FileSelector,
                 title="S3 online data",
                 margin=5,

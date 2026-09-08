@@ -9,6 +9,7 @@ import brimfile as bls  # Force import of brimfile
 from brimview_widgets.lazy_tabs import ActiveTabWatcher
 
 import panel as pn
+import panel_material_ui as pmui
 import holoviews as hv
 import xarray as xr  # Force import of xarray
 import scipy
@@ -20,7 +21,7 @@ import HDF5_BLS_treat # Force import of HDF5_BLS_treat
 __version__ = brimview_widgets.__version__
 
 hv.extension("bokeh")  # or 'plotly'/'matplotlib' depending on your use
-pn.extension("plotly", "filedropper", "jsoneditor", "tabulator", "modal", "tree", notifications=True)
+pn.extension("plotly", "filedropper", "jsoneditor", "tabulator", "modal", notifications=True)
 pn.extension(raw_css=[
         """
 .bk-tabs .bk-tab-pane[hidden] {
@@ -104,8 +105,17 @@ credits = pn.Row(
     )
 )
 
-# Assembling the template together
-layout = pn.template.FastListTemplate(
+MUI_THEME = {
+    "palette": {"primary": {"main": "#4099da"}},
+    "spacing": 4,
+    "typography": {"fontSize": 13},
+    "components": {
+        "MuiCard": {"defaultProps": {"raised": True}},
+        "MuiCardHeader": {"styleOverrides": {"root": {"padding": 8}}},
+    },
+}
+
+layout = pmui.Page(
     title="BrimView - a web-based Brillouin viewer and analyzer",
     header=[header_row],
     sidebar=[
@@ -115,14 +125,11 @@ layout = pn.template.FastListTemplate(
         pn.Spacer(height=15),
         credits,
     ],
-    logo=resource_path(
-        "./src/BrimView.png"
-    ),  # relative path to where you call `panel serve`
+    main=[main_tabs],
+    logo=resource_path("./src/BrimView.png"),
     favicon=resource_path("./src/BrimView.png"),
-    accent="#4099da",
+    theme_config=MUI_THEME,
 )
-
-layout.main.append(main_tabs)
 
 if running_from_pyodide:
     # This apparently needs to be loaded here to work nicely

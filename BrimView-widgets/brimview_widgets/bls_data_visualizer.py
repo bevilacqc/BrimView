@@ -1,5 +1,6 @@
 from typing import ClassVar
 import panel as pn
+import panel_material_ui as pmui
 from panel.io import hold
 import param
 import holoviews as hv
@@ -22,7 +23,7 @@ from .logging import logger
 import brimfile as bls
 from .bls_file_input import BlsFileInput
 from .utils import only_on_change, catch_and_notify
-from .widgets import HorizontalEditableIntSlider
+from .widgets import CustomPMuiCard
 import colorcet as cc
 import pandas as pd
 
@@ -811,26 +812,25 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
     def __panel__(self):
         """Use some fancier widget for some parameters"""
 
-        self.result_index_dropdown = pn.widgets.Select.from_param(
+        self.result_index_dropdown = pmui.Select.from_param(
             self.param.result_index, width=150
         )
-        self.result_quantity_dropdown = pn.widgets.Select.from_param(
+        self.result_quantity_dropdown = pmui.Select.from_param(
             self.param.result_quantity, width=150
         )
-        self.result_peak_dropdown = pn.widgets.Select.from_param(
+        self.result_peak_dropdown = pmui.Select.from_param(
             self.param.result_peak, width=150
         )
 
-        self.result_download = pn.widgets.FileDownload(
-            name="Click to start download of data",
-            filename="brimview_default.tiff",
+        self.result_download = pmui.FileDownload(
             label="Export as OME-tiff",
-            button_type="primary",
+            filename="brimview_default.tiff",
+            color="primary",
             auto=True,
             callback=self.download_tiff,
         )
 
-        self.result_options = pn.Card(
+        self.result_options = CustomPMuiCard(
             pn.FlexBox(
                 self.result_index_dropdown,
                 self.result_quantity_dropdown,
@@ -847,10 +847,10 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
         colormap_picker = pn.widgets.ColorMap.from_param(
             self.param.colormap, options=get_linear_colormaps(), ncols=3
         )
-        autoscale_checkbox = pn.widgets.Checkbox.from_param(
-            self.param.autoscale, name="Autoscale"
+        autoscale_checkbox = pmui.Checkbox.from_param(
+            self.param.autoscale, label="Autoscale"
         )
-        colorrange_picker = pn.widgets.RangeSlider.from_param(
+        colorrange_picker = pmui.RangeSlider.from_param(
             self.param.colorrange,
             start=0,
             end=1,
@@ -858,7 +858,7 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
             value_throttled=0.01,
             disabled=self.autoscale,
         )
-        rendering_options = pn.Card(
+        rendering_options = CustomPMuiCard(
             pn.FlexBox(
                 colormap_picker,
                 autoscale_checkbox,
@@ -881,29 +881,27 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
             colorrange_picker.disabled = self.autoscale
 
         # Seems like we need to manually update the widget's bounds
-        self.img_axis_3_slice_widget = HorizontalEditableIntSlider.from_param(
+        self.img_axis_3_slice_widget = pmui.EditableIntSlider.from_param(
             self.param.img_axis_3_slice,
             format="0",
-            name="3rd axis",
+            label="3rd axis",
             width=150,
             fixed_end=0,
             fixed_start=0,  # These will be updated in _update_axis_3
             disabled=True,
             margin=5,
         )
-        self.img_axis_3_slice_widget.tooltip_text = "Change which slice is displayed"
-
-        axis_options = pn.Card(
+        axis_options = CustomPMuiCard(
             pn.FlexBox(
                 # RadioButton has no working name
-                pn.widgets.Select.from_param(self.param.img_axis_1, width=150),
-                pn.widgets.Select.from_param(self.param.img_axis_2, width=150),
+                pmui.Select.from_param(self.param.img_axis_1, width=150),
+                pmui.Select.from_param(self.param.img_axis_2, width=150),
                 pn.Column(
-                    pn.widgets.Select.from_param(
+                    pmui.Select.from_param(
                         self.param.img_axis_3, disabled=True, width=150
                     ),
                 ),
-                pn.widgets.Checkbox.from_param(self.param.use_physical_units),
+                pmui.Checkbox.from_param(self.param.use_physical_units),
                 self.phys_unit_widget,
             ),
             title="Axis options",
@@ -913,12 +911,13 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
             margin=5,
         )
 
-        main_card = pn.Card(
+        main_card = CustomPMuiCard(
             pn.Row(self.img_axis_3_slice_widget, align="center"),
             pn.pane.HoloViews(self._plot_masked_data, sizing_mode="stretch_width"),
             self.result_options,
             axis_options,
             rendering_options,
+            title=self.name,
+            spinner=self.spinner,
         )
-        self.rewrite_card_header(main_card)
         return main_card

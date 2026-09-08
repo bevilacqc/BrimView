@@ -1,4 +1,5 @@
 import panel as pn
+import panel_material_ui as pmui
 import param
 import pandas as pd
 import brimfile as bls
@@ -13,7 +14,7 @@ from panel.custom import PyComponent
 
 from .utils import catch_and_notify
 from .environment import is_running_from_docker, running_from_pyodide
-from .widgets import HorizontalEditableIntSlider
+from .widgets import CustomPMuiCard
 from .logging import logger
 
 
@@ -42,20 +43,16 @@ class BlsFileInput(WidgetBase, PyComponent):
         params["name"] = "File input"
         super().__init__(**params)
 
-        self.spinner = pn.indicators.LoadingSpinner(
-            value=False, size=20, name="Idle", visible=True
+        self.spinner = pmui.CircularProgress(
+            value=False, size=20, label="Idle", visible=True
         )
 
-        self.datagroup_selector_widget = pn.widgets.Select.from_param(
-            self.param.data_group, name="Data Group", disabled=True
+        self.datagroup_selector_widget = pmui.Select.from_param(
+            self.param.data_group, label="Data Group", disabled=True
         )
-        self.data_group_index_widget = HorizontalEditableIntSlider.from_param(
-            self.param.data_group_index, name="Index", disabled=True, throttled=True
+        self.data_group_index_widget = pmui.EditableIntSlider.from_param(
+            self.param.data_group_index, label="Index", disabled=True, throttled=True
         )  # Enabling throttling to avoid too many updates while sliding
-        self.data_group_index_widget.tooltip_text = (
-            "Change which data group is displayed"
-        )
-        self.data_group_index_widget.tooltip_range_or_fixed_range = True
 
         def _link_index_to_group(event):
             if self.data_group_index is not None and self.data_group is not None:
@@ -73,8 +70,8 @@ class BlsFileInput(WidgetBase, PyComponent):
         pn.bind(_link_index_to_group, self.param.data_group_index, watch=True)
         pn.bind(_link_group_to_index, self.param.data_group, watch=True)
 
-        self.parameter_selector_widget = pn.widgets.Select.from_param(
-            self.param.data_parameter, name="Parameter", visible=False
+        self.parameter_selector_widget = pmui.Select.from_param(
+            self.param.data_parameter, label="Parameter", visible=False
         )
 
     @pn.depends("loading", watch=True)
@@ -92,12 +89,12 @@ class BlsFileInput(WidgetBase, PyComponent):
             if self.loading:
                 logger.debug("Setting loading spinner to true")
                 self.spinner.value = True
-                self.spinner.name = "Loading..."
+                self.spinner.label = "Loading..."
                 self.spinner.visible = True
             else:
                 logger.debug("Setting loading spinner to false")
                 self.spinner.value = False
-                self.spinner.name = "Idle"
+                self.spinner.label = "Idle"
                 self.spinner.visible = True
 
     @pn.depends("bls_file", watch=True)
@@ -290,19 +287,23 @@ class BlsFileInput(WidgetBase, PyComponent):
         if running_from_pyodide or is_running_from_docker():
             rw_toggle = None
         else:
-            rw_toggle = pn.widgets.Toggle.from_param(
+            rw_toggle = pmui.Toggle.from_param(
                 self.param.write_allowed,
                 icon="pencil",
-                name="Open with Write Access",
-                button_type="warning",
-                button_style="outline",
+                label="Open with Write Access",
+                color="warning",
+                variant="outlined",
             )
 
         self._update_header()
-        return pn.Column(
-            self._header,
-            rw_toggle,
-            self.datagroup_selector_widget,
-            self.data_group_index_widget,
-            self.parameter_selector_widget,
+        return CustomPMuiCard(
+            pn.Column(
+                rw_toggle,
+                self.datagroup_selector_widget,
+                self.data_group_index_widget,
+                self.parameter_selector_widget,
+            ),
+            title=self.name,
+            spinner=self.spinner,
+            sizing_mode="stretch_width",
         )
