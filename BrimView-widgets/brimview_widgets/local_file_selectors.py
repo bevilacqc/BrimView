@@ -5,11 +5,6 @@ import param
 from .environment import is_running_from_docker
 _running_from_docker = is_running_from_docker()
 
-if not _running_from_docker:
-    import tkinter as tk
-    from tkinter import filedialog
-    from tkinterdnd2 import TkinterDnD, DND_FILES  # Requires tkinterdnd2 library
-
 from .s3file_selector import S3FileSelector
 
 from .utils import catch_and_notify
@@ -17,6 +12,9 @@ from .logging import logger
 from .widgets import CustomPMuiCard
 
 def load_file_dialog() -> str | None:
+    import tkinter as tk
+    from tkinter import filedialog
+
     file_path_out = None
     root = tk.Tk()
     root.withdraw()  # Hide the root window
@@ -29,6 +27,9 @@ def load_file_dialog() -> str | None:
 
 
 def drag_and_drop_dialog() -> str | None:
+    import tkinter as tk
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+
     file_path_out = None
 
     def on_drop(event):
