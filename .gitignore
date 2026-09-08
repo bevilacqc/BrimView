@@ -8,6 +8,5 @@ my_cache.sqlite
 .DS_Store
 bls_examples/*
 src/pn_test.py
-.github/skills/*
 __pycache__
 *.pyc
