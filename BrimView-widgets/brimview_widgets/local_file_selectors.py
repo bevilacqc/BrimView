@@ -1,6 +1,5 @@
 import panel as pn
 import panel_material_ui as pmui
-import param
 
 from .environment import is_running_from_docker
 _running_from_docker = is_running_from_docker()

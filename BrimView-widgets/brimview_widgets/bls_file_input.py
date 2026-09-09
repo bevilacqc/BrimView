@@ -1,7 +1,6 @@
 import panel as pn
 import panel_material_ui as pmui
 import param
-import pandas as pd
 import brimfile as bls
 
 import tempfile

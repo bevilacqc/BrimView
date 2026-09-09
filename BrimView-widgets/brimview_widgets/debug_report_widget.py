@@ -8,7 +8,6 @@ import importlib.metadata
 
 from .environment import running_from_pyodide
 
-from urllib.parse import urljoin
 
 def get_url():
     """

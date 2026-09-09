@@ -1,7 +1,5 @@
-from typing import ClassVar
 import panel as pn
 import panel_material_ui as pmui
-from panel.io import hold
 import param
 import holoviews as hv
 from holoviews import streams
@@ -27,11 +25,9 @@ from .widgets import CustomPMuiCard
 import colorcet as cc
 import pandas as pd
 
-import sys
 
 # DEBUG
 import time
-import datetime as dt
 
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
