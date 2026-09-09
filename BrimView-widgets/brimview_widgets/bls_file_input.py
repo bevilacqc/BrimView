@@ -50,8 +50,17 @@ class BlsFileInput(WidgetBase, PyComponent):
             self.param.data_group, label="Data Group", disabled=True
         )
         self.data_group_index_widget = pmui.EditableIntSlider.from_param(
-            self.param.data_group_index, label="Index", disabled=True, throttled=True
-        )  # Enabling throttling to avoid too many updates while sliding
+                self.param.data_group_index,
+                label="Index",
+                disabled=True,
+                throttled=True,
+            ) # Enabling throttling to avoid too many updates while sliding
+
+        self.data_group_index_widget_with_tooltip = pmui.Tooltip(
+            self.data_group_index_widget,
+            title="Change which data group is displayed",
+            placement="top",
+        ) 
 
         def _link_index_to_group(event):
             if self.data_group_index is not None and self.data_group is not None:
@@ -299,7 +308,7 @@ class BlsFileInput(WidgetBase, PyComponent):
             pn.Column(
                 rw_toggle,
                 self.datagroup_selector_widget,
-                self.data_group_index_widget,
+                self.data_group_index_widget_with_tooltip,
                 self.parameter_selector_widget,
             ),
             title=self.name,
