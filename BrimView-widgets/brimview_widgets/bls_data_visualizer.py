@@ -784,7 +784,7 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
         Converts the current selected and displayed data into a tiff file.
 
         The file is saved in a temporary directory, and
-        it's path/name if returned. panel.widget.FileDownload will then
+        it's path/name if returned. pmui.FileDownload will then
         automatically download the file when the user clicks on the button.
         """
         import tempfile

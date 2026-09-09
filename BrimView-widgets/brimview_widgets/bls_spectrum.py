@@ -25,6 +25,8 @@ from panel.custom import PyComponent
 from .bls_types import bls_param
 from .widgets import SwitchWithLabels
 
+import panel_material_ui as pmui
+
 from bokeh.models.widgets.tables import HTMLTemplateFormatter
 
 
@@ -810,7 +812,10 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
                 height=300,  # Not the greatest solution
                 sizing_mode="stretch_width",
             ),
-            pn.widgets.FileDownload(callback=self.csv_export, filename="raw_data.csv"),
+            pmui.FileDownload(callback=self.csv_export, 
+                              filename="raw_data.csv",
+                              color="primary",
+                              auto=True,),
             pn.FlexBox(self.auto_refit, self.saved_fit),
             sizing_mode="stretch_height",
         )
