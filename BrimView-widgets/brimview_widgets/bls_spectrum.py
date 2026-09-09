@@ -604,7 +604,7 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
                 # If the user is not wanting to display the saved_fit, then let's just do this silently
                 if self.saved_fit.process:
                     pn.state.notifications.warning(
-                        f"<b>Saved fit</b>: Continuing with default peak function <br/> ({e})"
+                        f"`Saved fit`: Continuing with default peak function \n ({e})"
                     )
                 used_model = BlsProcessingModels.Lorentzian
                 tooltip_text = f"Impossible to use file's metadata to determine the peak model. Using a default peak model instead. \n(Reported error: *{e}*)"
@@ -667,7 +667,7 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
                     saved_curves = self.fitted_curves(x_range, z, y, x)
                     curves.extend(saved_curves)
             except Exception as e:
-                pn.state.notifications.warning(f"<b>Plot saved fit: </b> {e}")
+                pn.state.notifications.warning(f"`Plot saved fit:` {e}")
 
             try:
                 if self.auto_refit.process:
@@ -676,7 +676,7 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
                     )
                     curves.extend(refit_curves)
             except Exception as e:
-                pn.state.notifications.warning(f"<b>Auto-refit: </b> {e}")
+                pn.state.notifications.warning(f"`Auto-refit:` {e}")
 
         else:
             logger.warning("No BLS data available. Cannot plot spectrum.")

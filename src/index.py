@@ -27,6 +27,10 @@ pn.extension(raw_css=[
 .bk-tabs .bk-tab-pane[hidden] {
     pointer-events: none !important;
 }
+.bk-notification,
+.MuiAlert-message {
+    white-space: pre-line !important;
+}
 """])
 # set the default loading indicator 
 pn.config.loading_spinner = "arc"

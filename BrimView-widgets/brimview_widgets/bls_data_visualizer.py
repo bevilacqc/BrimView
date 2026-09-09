@@ -701,9 +701,9 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
                 round(y / self.y_px.value),
                 round(x / self.x_px.value),
             )
-            unit = f"(z={z} {self.z_px.units}, y={y} {self.y_px.units}, x={x} {self.x_px.units})"
+            unit = f"(z={z:.2f} {self.z_px.units}, y={y:.2f} {self.y_px.units}, x={x:.2f} {self.x_px.units})"
             index = f"(z={ self.dataset_zyx_click[0]}, y={ self.dataset_zyx_click[1]}, x={self.dataset_zyx_click[2]})"
-            user_msg = f"Clicked on pixel: <br/> 🌍: {unit} <br/> 🔢: {index}"
+            user_msg = f"Clicked on pixel: \n 🌍: {unit} \n 🔢: {index}"
             logger.info(user_msg)
             pn.state.notifications.info(user_msg)
 
