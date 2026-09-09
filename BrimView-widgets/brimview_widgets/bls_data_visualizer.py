@@ -913,7 +913,10 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
 
         main_card = CustomPMuiCard(
             pn.Row(self.img_axis_3_slice_widget, align="center"),
-            pn.pane.HoloViews(self._plot_masked_data, sizing_mode="stretch_width"),
+            # wrap the HoloViews pane in a Column to circumvent the bug https://github.com/panel-extensions/panel-material-ui/issues/548
+            pn.Column(
+                pn.pane.HoloViews(self._plot_masked_data, sizing_mode="stretch_width"),
+            ),
             self.result_options,
             axis_options,
             rendering_options,
