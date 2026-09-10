@@ -4,6 +4,7 @@ import numpy as np
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
 import panel as pn
+import panel_material_ui as pmui
 import holoviews as hv
 import xarray as xr
 
@@ -54,14 +55,9 @@ class BlsRawDataVisualizer(WidgetBase, PyComponent):
 
         self.calibration_group = None
 
-        self._enable_switch = pn.widgets.Switch(name='Enabled', value=False)
+        self._enable_switch = pmui.Switch(label='Enabled', value=False)
 
         self._enabled_param = self._enable_switch.param.value
-
-        # Because we're not a pn.Viewer anymore, by default we lost the "card" display
-        # so despite us returning a card from __panel__, the shown card didn't match
-        # the card display (background color, shadows)
-        self.css_classes.append("card")
 
     def _enabled(self) -> bool:
         return self.visible and self._enable_switch.value
@@ -164,7 +160,7 @@ class BlsRawDataVisualizer(WidgetBase, PyComponent):
         # TODO: add tooltip to describe what the card is showing
         #       displaying the colormap (and maybe allow to select it)
         #       enabling the tool to hover above a pixel, and display the raw value
-        return pn.Card(
+        return pmui.Card(
             self._enable_switch,
             pn.pane.HoloViews(self._plot_data, sizing_mode="stretch_width"),
             title=self.name,

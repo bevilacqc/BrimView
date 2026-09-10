@@ -81,12 +81,12 @@ class TinkerFileSelector(pn.viewable.Viewer):
 
         # Filedialog button
         self.filedialog_button = pmui.Button(
-            label="Click me to select a file", color="primary", width=200
+            label="Click me to select a file", color="primary", sizing_mode="stretch_width",
         )
         self.filedialog_button.on_click(self._select_file_dialog)
 
         self.dragNdrop_button = pmui.Button(
-            label="Click me to drag and drop a file", color="primary", width=200
+            label="Click me to drag and drop a file", color="primary", sizing_mode="stretch_width"
         )
         self.dragNdrop_button.on_click(self._drag_and_drop_dialog)
 
@@ -154,6 +154,7 @@ class TinkerFileSelector(pn.viewable.Viewer):
                     self.filedialog_button,
                     self.dragNdrop_button,
                     title="Local data",
+                    sizing_mode="stretch_width",
                     margin=5
 
                 )
@@ -166,12 +167,13 @@ class TinkerFileSelector(pn.viewable.Viewer):
                     collapsed = True
                 )
 
-        return pn.FlexBox(
+        return pmui.FlexBox(
             local_data_widget, 
             CustomPMuiCard(
                 self.s3FileSelector,
                 title="S3 online data",
                 margin=5,
+                sizing_mode="stretch_width",
                 collapsed = True
             )
         )

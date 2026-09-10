@@ -63,7 +63,9 @@ def parse_query_params(file_widget: "brimview_widgets.TinkerFileSelector"):
 # The things we need
 # See: https://github.com/holoviz/panel/issues/7913#issuecomment-2880177999
 # See: https://panel.holoviz.org/explanation/styling/templates_overview.html
-sidebar = pn.layout.FlexBox()
+sidebar = pmui.FlexBox()
+# TODO: convert to pmui.Tabs.
+# currently the metadata Tabulator doesn't render correctly if using pmui.Tabs
 main_tabs = pn.Tabs(
     sizing_mode="stretch_width",
 )
@@ -75,38 +77,41 @@ github_icon = pn.pane.HTML(
     '<img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" width="24" height="24" style="vertical-align: middle;">'
     "</a>",
 )
-header_row = pn.Row(pn.layout.HSpacer(), github_icon)
+header_row = pmui.Row(pn.layout.HSpacer(), github_icon)
 
-data_protection = pn.Row(
-    pn.Card(
-        pn.pane.HTML(
-            "When you upload a file from your computer, it is processed <b>locally in your browser</b> and <b>never sent to any server</b>."
-        ),
-        hide_header=True,
-        title="Data protection",
-        sizing_mode="stretch_width",
-        collapsible=False,
-    )
+# Note: these used to be wrapped in a bare `pn.Row(...)`. A plain `pn.Row`/`pn.Column`
+# defaults to a *fixed* sizing_mode (unlike `pn.layout.FlexBox`, which defaults to
+# "stretch_width"), so it doesn't stretch to the sidebar's width itself; nested one level
+# down, the Card's own `sizing_mode="stretch_width"` was then resolved against that fixed-width
+# Row instead of the actual sidebar, which is what caused these two cards to render narrower/
+# misaligned compared to the other (unwrapped) sidebar cards. Using the Card directly, with no
+# wrapper, lets it stretch to the sidebar like every other sidebar item.
+data_protection = pmui.Card(
+    pn.pane.HTML(
+        "When you upload a file from your computer, it is processed <b>locally in your browser</b> and <b>never sent to any server</b>."
+    ),
+    hide_header=True,
+    title="Data protection",
+    sizing_mode="stretch_width",
+    collapsible=False,
 )
 
 _running_from_docker = brimview_widgets.environment.is_running_from_docker()
 if _running_from_docker:
     data_protection = None
 
-credits = pn.Row(
-    pn.Card(
-        pn.pane.HTML(
-            "If you encounter any issue, please open a <a href='https://github.com/brillouin-imaging/BrimView/issues'>GitHub issue</a>."
-        ),
-        pn.pane.HTML(
-            f"<p><small>Developed with <a href='https://panel.holoviz.org/'>Panel</a> by Sebastian Hambura and Carlo Bevilacqua at <a href='https://www.prevedel.embl.de/'>Prevedel lab</a>.</small></p><p><small>BrimView {__version__}, brimfile {bls.__version__}</small></p>",
-        ),
-        brimview_widgets.DebugReport(),
-        hide_header=True,
-        title="Credits",
-        sizing_mode="stretch_width",
-        collapsible=False,
-    )
+credits = pmui.Card(
+    pn.pane.HTML(
+        "If you encounter any issue, please open a <a href='https://github.com/brillouin-imaging/BrimView/issues'>GitHub issue</a>."
+    ),
+    pn.pane.HTML(
+        f"<p><small>Developed with <a href='https://panel.holoviz.org/'>Panel</a> by Sebastian Hambura and Carlo Bevilacqua at <a href='https://www.prevedel.embl.de/'>Prevedel lab</a>.</small></p><p><small>BrimView {__version__}, brimfile {bls.__version__}</small></p>",
+    ),
+    brimview_widgets.DebugReport(),
+    hide_header=True,
+    title="Credits",
+    sizing_mode="stretch_width",
+    collapsible=False,
 )
 
 MUI_THEME = {
@@ -190,7 +195,7 @@ def build_ui():
         )
 
         file_widget = pn.layout.FlexBox(
-            pn.Card(s3_file_selector, title="S3 online data", margin=5),
+            pmui.Card(s3_file_selector, title="S3 online data", margin=5),
         )
 
         # Creating the treatment widget
@@ -241,9 +246,9 @@ def build_ui():
     rawdata_visualizer = brimview_widgets.BlsRawDataVisualizer(DataVisualizer)
     spectrum_visualizer = brimview_widgets.BlsSpectrumVisualizer(DataVisualizer)
     statistics_widget = brimview_widgets.BlsStatistics(DataVisualizer)
-    brim_visualizer = pn.layout.Row(
-        pn.layout.FlexBox(DataVisualizer, margin=10),
-        pn.layout.FlexBox(spectrum_visualizer, rawdata_visualizer, statistics_widget, 
+    brim_visualizer = pmui.Row(
+        pmui.FlexBox(DataVisualizer, margin=10),
+        pmui.FlexBox(spectrum_visualizer, rawdata_visualizer, statistics_widget, 
                           margin=10, gap="10px"),
         sizing_mode="stretch_width",
     )

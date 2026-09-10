@@ -29,13 +29,13 @@ class SampledataLoader(pn.viewable.Viewer):
         
         # S3 link input
         self.sampledata_load_button = pmui.Button(
-            label="Load sample", color="primary", width=200
+            label="Load sample", color="primary", sizing_mode="stretch_width"
         )
         self.sampledata_load_button.on_click(self._load_s3_file)
         self.s3_link = pmui.Select(
             label='Dataset',
             options=list(self._sampledata.keys()),
-            width=300)
+            sizing_mode="stretch_width")
 
     @catch_and_notify(prefix="<b>Load S3 file: </b>")
     def _load_s3_file(self, event):
@@ -60,7 +60,7 @@ class SampledataLoader(pn.viewable.Viewer):
 
     def __panel__(self):
         return CustomPMuiCard(
-            pn.layout.FlexBox(self.s3_link, self.sampledata_load_button),
+            pmui.FlexBox(self.s3_link, self.sampledata_load_button),
             title="Sample data",
             collapsed=True,
             collapsible=True,

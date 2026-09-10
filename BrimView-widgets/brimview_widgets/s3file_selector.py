@@ -11,13 +11,13 @@ class S3FileSelector(pn.viewable.Viewer):
         
         # S3 link input
         self.s3_load_button = pmui.Button(
-            label="Load S3 file", color="primary", width=200
+            label="Load S3 file", color="primary", sizing_mode="stretch_width"
         )
         self.s3_load_button.on_click(self._load_s3_file)
         self.s3_link = pmui.TextInput(
             label="S3 Link",
             placeholder="Enter S3 link to a file",
-            width=300,
+            sizing_mode="stretch_width",
         )
         self.s3_link.param.watch(
             self._load_s3_file, ["enter_pressed"], onlychanged=False
@@ -45,4 +45,4 @@ class S3FileSelector(pn.viewable.Viewer):
         self.process_path_fn = func
 
     def __panel__(self):
-        return pn.layout.FlexBox(self.s3_link, self.s3_load_button)
+        return pmui.FlexBox(self.s3_link, self.s3_load_button)

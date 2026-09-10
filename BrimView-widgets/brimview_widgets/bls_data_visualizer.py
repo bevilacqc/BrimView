@@ -140,8 +140,8 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
 
     def __init__(self, Bh5file: BlsFileInput, **params):
 
-        self.spinner = pn.indicators.LoadingSpinner(
-            value=False, size=20, name="Idle", visible=True
+        self.spinner = pmui.CircularProgress(
+            value=False, size=20, label="Idle", visible=True
         )
 
         # Bh5file.param.watch(self._update_data, ["data"])
@@ -163,11 +163,6 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
         self.bls_data: bls.Data = Bh5file.param.data
         self.bls_file: bls.File = Bh5file.param.bls_file
 
-        # Because we're not a pn.Viewer anymore, by default we lost the "card" display
-        # so despite us returning a card from __panel__, the shown card didn't match
-        # the card display (background color, shadows)
-        self.css_classes.append("card")
-
     @pn.depends("loading", watch=True)
     def loading_spinner(self):
         """
@@ -182,41 +177,12 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
         with param.parameterized.batch_call_watchers(self.spinner):
             if self.loading:
                 self.spinner.value = True
-                self.spinner.name = "Loading..."
+                self.spinner.label = "Loading..."
                 self.spinner.visible = True
             else:
                 self.spinner.value = False
-                self.spinner.name = "Idle"
+                self.spinner.label = "Idle"
                 self.spinner.visible = True
-
-    def rewrite_card_header(self, card: pn.Card):
-        """
-        Changes a bit how the header of the card is displayed.
-        We replace the default title by
-            [{self.name}     {spinner}]
-
-        With self.name to the left and spinner to the right
-        """
-        params = {
-            "object": f"<h3>{self.name}</h3>" if self.name else "&#8203;",
-            "css_classes": card.title_css_classes,
-            "margin": (5, 0),
-        }
-        self.spinner.align = ("end", "center")
-        self.spinner.margin = (10, 30)
-        header = pn.FlexBox(
-            pn.pane.HTML(**params),
-            # self.spinner,
-            # pn.Spacer(),  # pushes next item to the right
-            self.spinner,
-            align_content="space-between",
-            align_items="center",  # Vertical-ish
-            sizing_mode="stretch_width",
-            justify_content="space-between",
-        )
-        # header.styles = {"place-content": "space-between"}
-        card.header = header
-        card._header_layout.styles = {"width": "inherit"}
 
     @param.depends("bls_data", watch=True)
     @catch_and_notify(prefix="<b>File loading: </b>")
@@ -886,6 +852,8 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
             fixed_start=0,  # These will be updated in _update_axis_3
             disabled=True,
             margin=5,
+            inline_layout=True,
+            size="small"
         )
         axis_options = CustomPMuiCard(
             pn.FlexBox(

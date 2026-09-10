@@ -47,19 +47,23 @@ class BlsFileInput(WidgetBase, PyComponent):
         )
 
         self.datagroup_selector_widget = pmui.Select.from_param(
-            self.param.data_group, label="Data Group", disabled=True
+            self.param.data_group, label="Data Group", 
+            sizing_mode="stretch_width",
+            disabled=True
         )
         self.data_group_index_widget = pmui.EditableIntSlider.from_param(
                 self.param.data_group_index,
                 label="Index",
                 disabled=True,
                 throttled=True,
+                sizing_mode="stretch_width",
             ) # Enabling throttling to avoid too many updates while sliding
 
         self.data_group_index_widget_with_tooltip = pmui.Tooltip(
             self.data_group_index_widget,
             title="Change which data group is displayed",
             placement="top",
+            sizing_mode="stretch_width",
         ) 
 
         def _link_index_to_group(event):
@@ -79,7 +83,8 @@ class BlsFileInput(WidgetBase, PyComponent):
         pn.bind(_link_group_to_index, self.param.data_group, watch=True)
 
         self.parameter_selector_widget = pmui.Select.from_param(
-            self.param.data_parameter, label="Parameter", visible=False
+            self.param.data_parameter, label="Parameter", visible=False,
+            sizing_mode="stretch_width",
         )
 
     @pn.depends("loading", watch=True)
@@ -297,15 +302,16 @@ class BlsFileInput(WidgetBase, PyComponent):
         else:
             rw_toggle = pmui.Toggle.from_param(
                 self.param.write_allowed,
-                icon="pencil",
+                icon="edit",
                 label="Open with Write Access",
                 color="warning",
                 variant="outlined",
+                sizing_mode="stretch_width",
             )
 
         self._update_header()
         return CustomPMuiCard(
-            pn.Column(
+            pmui.Column(
                 rw_toggle,
                 self.datagroup_selector_widget,
                 self.data_group_index_widget_with_tooltip,

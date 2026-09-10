@@ -4,6 +4,7 @@ import pandas as pd
 
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
+import panel_material_ui as pmui
 
 import brimfile as bls
 
@@ -34,6 +35,7 @@ class BlsMetadata(WidgetBase, PyComponent):
             disabled=True,
             groupby=["Group"],
             hidden_columns=["Group"],
+            sizing_mode="stretch_width",
             formatters={
                 "Validity": HTMLTemplateFormatter(
                     template="""

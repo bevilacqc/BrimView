@@ -18,7 +18,7 @@ from .logging import logger
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
 from .bls_types import bls_param
-from .widgets import SwitchWithLabels
+from .widgets import SwitchWithLabels, CustomPMuiCard
 
 import panel_material_ui as pmui
 
@@ -198,7 +198,7 @@ class FitParam(pn.viewable.Viewer):
         self._table.visible = True
 
     def __panel__(self):
-        return pn.Card(
+        return pmui.Card(
             self._process_switch,
             pn.Row(self._model_dropdown, self._reset_button),
             self._table,
@@ -242,8 +242,8 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
     results_at_point = param.Dict(label="Result values at this point", precedence=-1)
 
     def __init__(self, result_plot: BlsDataVisualizer, **params):
-        self.spinner = pn.indicators.LoadingSpinner(
-            value=False, size=20, name="Idle", visible=True
+        self.spinner = pmui.CircularProgress(
+            value=False, size=20, label="Idle", visible=True
         )
         self.bls_spectrum_in_image = None
         params["name"] = "Spectrum visualization"
@@ -274,11 +274,6 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
         # Configure autore_fit widget
         self.auto_refit._reset_button.visible = True
         self._set_early_replot_exit(False)
-
-        # Because we're not a pn.Viewer anymore, by default we lost the "card" display
-        # so despite us returning a card from __panel__, the shown card didn't match
-        # the card display (background color, shadows)
-        self.css_classes.append("card")
 
         # Annoation help
         self.model_fit: BlsProcessingModels
@@ -382,43 +377,15 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
         In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
         don't get updated.
         """
-        if self.loading:
-            self.spinner.value = True
-            self.spinner.name = "Loading..."
-            self.spinner.visible = True
-        else:
-            self.spinner.value = False
-            self.spinner.name = "Idle"
-            self.spinner.visible = True
-
-    def rewrite_card_header(self, card: pn.Card, tooltip: str = None):
-        """
-        Changes a bit how the header of the card is displayed.
-        We replace the default title by
-            [{self.name}     {spinner}]
-
-        With self.name to the left and spinner to the right
-        """
-        params = {
-            "object": f"<h3>{self.name}</h3>" if self.name else "&#8203;",
-            "css_classes": card.title_css_classes,
-            "margin": (5, 0),
-        }
-        self.spinner.align = ("end", "center")
-        self.spinner.margin = (10, 30)
-        header = pn.FlexBox(
-            pn.Row(
-                pn.pane.HTML(**params),
-                pn.widgets.TooltipIcon(value=tooltip) if tooltip else pn.Spacer(),
-            ),
-            self.spinner,
-            align_content="space-between",
-            align_items="center",  # Vertical-ish
-            sizing_mode="stretch_width",
-            justify_content="space-between",
-        )
-        card.header = header
-        card._header_layout.styles = {"width": "inherit"}
+        with param.parameterized.batch_call_watchers(self.spinner):
+            if self.loading:
+                self.spinner.value = True
+                self.spinner.label = "Loading..."
+                self.spinner.visible = True
+            else:
+                self.spinner.value = False
+                self.spinner.label = "Idle"
+                self.spinner.visible = True
 
     def fitted_curves(self, x_range: np.ndarray, z, y, x):
         logger.info(f"Computing fitted curves at ({time.time()})")
@@ -706,6 +673,7 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
             legend_position="bottom",
             legend_cols=3,
             responsive=True,
+            show_grid=True,
             title=f"Spectrum at index (z={z}, y={y}, x={x})",
         )
 
@@ -801,7 +769,7 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
 
     def __panel__(self):
 
-        card = pn.Card(
+        return CustomPMuiCard(
             pn.pane.HoloViews(
                 self.plot_spectrum,
                 height=300,  # Not the greatest solution
@@ -812,8 +780,8 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
                               color="primary",
                               auto=True,),
             pn.FlexBox(self.auto_refit, self.saved_fit),
-            sizing_mode="stretch_height",
+            title=self.name,
+            spinner=self.spinner,
+            tooltip=self.tooltip,
+            sizing_mode="stretch_width",
         )
-
-        self.rewrite_card_header(card, self.tooltip)
-        return card

@@ -4,6 +4,7 @@ from .logging import logger
 from .bls_types import bls_param
 
 import panel as pn
+import panel_material_ui as pmui
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
 from bokeh.models.widgets.tables import ScientificFormatter
@@ -59,8 +60,8 @@ class BlsStatistics(WidgetBase, PyComponent):
     )
 
     def __init__(self, result_plot: BlsDataVisualizer, **params):
-        self.spinner = pn.indicators.LoadingSpinner(
-            value=False, size=20, name="Idle", visible=True
+        self.spinner = pmui.CircularProgress(
+            value=False, size=20, label="Idle", visible=True
         )
         params["name"] = "Group Statistics"
         self.tooltip = "Use the **Lasso Select** tool to select a region in the image. This widget will compute the average spectrum and other quantities for the selected region."
@@ -81,11 +82,6 @@ class BlsStatistics(WidgetBase, PyComponent):
         self.img_axis_3_slice = result_plot.param.img_axis_3_slice
 
         # === Some panel setup ===
-        # Because we're not a pn.Viewer anymore, by default we lost the "card" display
-        # so despite us returning a card from __panel__, the shown card didn't match
-        # the card display (background color, shadows)
-        self.css_classes.append("card")
-
         self.spectrum_plot_widget = pn.pane.HoloViews(
             None,
             sizing_mode="stretch_width",
@@ -313,14 +309,15 @@ class BlsStatistics(WidgetBase, PyComponent):
         In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
         don't get updated.
         """
-        if self.loading:
-            self.spinner.value = True
-            self.spinner.name = "Loading..."
-            self.spinner.visible = True
-        else:
-            self.spinner.value = False
-            self.spinner.name = "Idle"
-            self.spinner.visible = True
+        with param.parameterized.batch_call_watchers(self.spinner):
+            if self.loading:
+                self.spinner.value = True
+                self.spinner.label = "Loading..."
+                self.spinner.visible = True
+            else:
+                self.spinner.value = False
+                self.spinner.label = "Idle"
+                self.spinner.visible = True
 
     def rewrite_card_header(self, card: pn.Card, tooltip: str = None):
         """
@@ -403,6 +400,9 @@ class BlsStatistics(WidgetBase, PyComponent):
 
     def __panel__(self):
         """Create Panel layout for the statistics widget."""
+        # TODO: Convert to a PMuiCard 
+        # currently if using a PMuiCard, the spinner and the tqdm don't display
+        # and the behavior is erratic, sometimes it doesn't work also in the current implementation
         card = pn.Card(
             self.mask_status,
             self.tqdm,
@@ -411,5 +411,7 @@ class BlsStatistics(WidgetBase, PyComponent):
             title="BLS Statistics",
             sizing_mode="stretch_height",
         )
+
         self.rewrite_card_header(card, tooltip=self.tooltip)
         return card
+
