@@ -11,7 +11,7 @@ from panel.io import hold
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
 
-from .utils import catch_and_notify
+from .utils import catch_and_notify, loading_spinner
 from .environment import is_running_from_docker, running_from_pyodide
 from .widgets import CustomPMuiCard
 from .logging import logger
@@ -88,27 +88,8 @@ class BlsFileInput(WidgetBase, PyComponent):
         )
 
     @pn.depends("loading", watch=True)
-    def loading_spinner(self):
-        """
-        Controls an additional spinner UI.
-        This goes on top of the `loading` param that comes with panel widgets.
-
-        This is especially usefull in the `panel convert` case,
-        because some UI elements can't updated easily (or at least in the same way as `panel serve`).
-        In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
-        don't get updated.
-        """
-        with param.parameterized.batch_call_watchers(self.spinner):
-            if self.loading:
-                logger.debug("Setting loading spinner to true")
-                self.spinner.value = True
-                self.spinner.label = "Loading..."
-                self.spinner.visible = True
-            else:
-                logger.debug("Setting loading spinner to false")
-                self.spinner.value = False
-                self.spinner.label = "Idle"
-                self.spinner.visible = True
+    def _on_loading(self):
+        loading_spinner(self)  # Call the function from utils.py
 
     @pn.depends("bls_file", watch=True)
     def _update_header(self):

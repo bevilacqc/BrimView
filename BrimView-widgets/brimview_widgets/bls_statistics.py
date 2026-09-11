@@ -5,9 +5,13 @@ from .bls_types import bls_param
 
 import panel as pn
 import panel_material_ui as pmui
+from .widgets import CustomPMuiCard
+from .utils import loading_spinner
+
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
 from bokeh.models.widgets.tables import ScientificFormatter
+
 import param
 import holoviews as hv
 import numpy as np
@@ -61,11 +65,12 @@ class BlsStatistics(WidgetBase, PyComponent):
 
     def __init__(self, result_plot: BlsDataVisualizer, **params):
         self.spinner = pmui.CircularProgress(
-            value=False, size=20, label="Idle", visible=True
-        )
-        params["name"] = "Group Statistics"
-        self.tooltip = "Use the **Lasso Select** tool to select a region in the image. This widget will compute the average spectrum and other quantities for the selected region."
+                    value=False, size=20, label="Idle", visible=True
+                )
+        params["name"] = "Group Statistics"        
         super().__init__(**params)
+
+        self.tooltip = "Use the **Lasso Select** tool to select a region in the image. This widget will compute the average spectrum and other quantities for the selected region."
 
         # === Linking to other widgets ===
         # TODO: update result_plot to use this new class
@@ -200,6 +205,9 @@ class BlsStatistics(WidgetBase, PyComponent):
 
         self.loading = True
         self.tqdm.visible = True
+
+        logger.info("Updating statistics widget")
+
         spectra, quantities = self.fetch_data_from_points(self.selected_points)
 
         # spectra: (PSD, frequency, PSD_units, frequency_units)
@@ -299,54 +307,8 @@ class BlsStatistics(WidgetBase, PyComponent):
     # === Panel display method / GUI logic===
 
     @pn.depends("loading", watch=True)
-    def loading_spinner(self):
-        """
-        Controls an additional spinner UI.
-        This goes on top of the `loading` param that comes with panel widgets.
-
-        This is especially useful in the `panel convert` case,
-        because some UI elements can't updated easily (or at least in the same way as `panel serve`).
-        In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
-        don't get updated.
-        """
-        with param.parameterized.batch_call_watchers(self.spinner):
-            if self.loading:
-                self.spinner.value = True
-                self.spinner.label = "Loading..."
-                self.spinner.visible = True
-            else:
-                self.spinner.value = False
-                self.spinner.label = "Idle"
-                self.spinner.visible = True
-
-    def rewrite_card_header(self, card: pn.Card, tooltip: str = None):
-        """
-        Changes a bit how the header of the card is displayed.
-        We replace the default title by
-            [{self.name}     {spinner}]
-
-        With self.name to the left and spinner to the right
-        """
-        params = {
-            "object": f"<h3>{self.name}</h3>" if self.name else "&#8203;",
-            "css_classes": card.title_css_classes,
-            "margin": (5, 0),
-        }
-        self.spinner.align = ("end", "center")
-        self.spinner.margin = (10, 30)
-        header = pn.FlexBox(
-            pn.Row(
-                pn.pane.HTML(**params),
-                pn.widgets.TooltipIcon(value=tooltip) if tooltip else pn.Spacer(),
-            ),
-            self.spinner,
-            align_content="space-between",
-            align_items="center",  # Vertical-ish
-            sizing_mode="stretch_width",
-            justify_content="space-between",
-        )
-        card.header = header
-        card._header_layout.styles = {"width": "inherit"}
+    def _on_loading(self):
+        loading_spinner(self)  # Call the function from utils.py
 
     def placeholder_dataframe(
         self,
@@ -400,18 +362,15 @@ class BlsStatistics(WidgetBase, PyComponent):
 
     def __panel__(self):
         """Create Panel layout for the statistics widget."""
-        # TODO: Convert to a PMuiCard 
-        # currently if using a PMuiCard, the spinner and the tqdm don't display
-        # and the behavior is erratic, sometimes it doesn't work also in the current implementation
-        card = pn.Card(
+        card = CustomPMuiCard(
             self.mask_status,
             self.tqdm,
             self.spectrum_plot_widget,
             self.statistic_tabulator_widget,
             title="BLS Statistics",
-            sizing_mode="stretch_height",
+            spinner=self.spinner,
+            tooltip=self.tooltip,
+            sizing_mode="stretch_width",
         )
-
-        self.rewrite_card_header(card, tooltip=self.tooltip)
         return card
 

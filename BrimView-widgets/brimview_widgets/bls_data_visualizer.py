@@ -4,7 +4,7 @@ import param
 import holoviews as hv
 from holoviews import streams
 
-from .utils import points_in_polygon
+from .utils import points_in_polygon, loading_spinner
 try:
     import scipy
 
@@ -164,25 +164,8 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
         self.bls_file: bls.File = Bh5file.param.bls_file
 
     @pn.depends("loading", watch=True)
-    def loading_spinner(self):
-        """
-        Controls an additional spinner UI.
-        This goes on top of the `loading` param that comes with panel widgets.
-
-        This is especially usefull in the `panel convert` case,
-        because some UI elements can't updated easily (or at least in the same way as `panel serve`).
-        In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
-        don't get updated.
-        """
-        with param.parameterized.batch_call_watchers(self.spinner):
-            if self.loading:
-                self.spinner.value = True
-                self.spinner.label = "Loading..."
-                self.spinner.visible = True
-            else:
-                self.spinner.value = False
-                self.spinner.label = "Idle"
-                self.spinner.visible = True
+    def _on_loading(self):
+        loading_spinner(self)  # Call the function from utils.py
 
     @param.depends("bls_data", watch=True)
     @catch_and_notify(prefix="<b>File loading: </b>")
@@ -566,7 +549,26 @@ class BlsDataVisualizer(WidgetBase, PyComponent):
             return mask
 
         logger.debug("Updating selection mask")
-        self.mask = lasso_to_mask(geometry, mask_shape)
+
+        # === weird WORKAROUND ===
+        # - this function is being called by stream from Holoview
+        # - it's updating a param variable
+        # - this param variable is linked to another one, that is used to trigger stuff
+        #
+        # *However*: because the initial event comes from Holoviews, it
+        # seems like there's some kind of 'lock' (either on bokeh model, or some batch_process from panel)  and the downstream function
+        # don't update the GUI at the time they're supposed too
+        # (in particular, some widget.loading = True was displaying/updating at the *end* of the function call, not immediately)
+        #
+        # So the workaround is:
+        # - call add_periodic_callback with a function that will update the param (and trigger the downstream stuff)
+        #
+        # This has been tested with `panel serve` and `panel convert`
+
+        def _panel_update():
+            self.mask = lasso_to_mask(geometry, mask_shape)
+
+        pn.state.add_periodic_callback(_panel_update, period=200, count=1)
 
     @(
         param.depends(

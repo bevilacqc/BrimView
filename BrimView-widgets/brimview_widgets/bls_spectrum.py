@@ -12,7 +12,7 @@ import brimfile as bls
 from .models import BlsProcessingModels, MultiPeakModel
 from .bls_data_visualizer import BlsDataVisualizer
 
-from .utils import catch_and_notify, safe_get
+from .utils import catch_and_notify, safe_get, loading_spinner
 from .logging import logger
 
 from panel.widgets.base import WidgetBase
@@ -367,25 +367,8 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
         return fits
 
     @pn.depends("loading", watch=True)
-    def loading_spinner(self):
-        """
-        Controls an additional spinner UI.
-        This goes on top of the `loading` param that comes with panel widgets.
-
-        This is especially usefull in the `panel convert` case,
-        because some UI elements can't updated easily (or at least in the same way as `panel serve`).
-        In particular, the visible toggle is not always working, and elements inside Rows and Columns sometimes
-        don't get updated.
-        """
-        with param.parameterized.batch_call_watchers(self.spinner):
-            if self.loading:
-                self.spinner.value = True
-                self.spinner.label = "Loading..."
-                self.spinner.visible = True
-            else:
-                self.spinner.value = False
-                self.spinner.label = "Idle"
-                self.spinner.visible = True
+    def _on_loading(self):
+        loading_spinner(self)  # Call the function from utils.py
 
     def fitted_curves(self, x_range: np.ndarray, z, y, x):
         logger.info(f"Computing fitted curves at ({time.time()})")
@@ -585,7 +568,6 @@ class BlsSpectrumVisualizer(WidgetBase, PyComponent):
         else:
             self.bls_spectrum_in_image = None
 
-        # self.loading = False
         now = time.time()
         logger.info(f"retrieve_point_rawdata at {now:.4f} seconds [done]")
         self.loading = False
