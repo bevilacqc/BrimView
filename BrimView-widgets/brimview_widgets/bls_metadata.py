@@ -4,7 +4,6 @@ import pandas as pd
 
 from panel.widgets.base import WidgetBase
 from panel.custom import PyComponent
-import panel_material_ui as pmui
 
 import brimfile as bls
 
