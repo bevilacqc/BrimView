@@ -112,22 +112,12 @@ class BlsFileInput(WidgetBase, PyComponent):
 
     @pn.depends("bls_file", watch=True)
     def _update_header(self):
-        # This might be a bit Panel anti-pattern, but it seems to be
-        # the only way to make it also work as expected in the `panel convert` case
-        # If you returned the header/FlexBox directly, then the spinner wouldn't update later on
         if self.bls_file is None:
             title = self.name
         else:
-            title = self.bls_file.filename
+            title = f"File: {self.bls_file.filename}"
 
-        self._header = pn.FlexBox(
-            pn.pane.Markdown(f"### {title}"),
-            self.spinner,
-            align_content="space-between",
-            align_items="center",  # Vertical-ish
-            sizing_mode="stretch_width",
-            justify_content="space-between",
-        )
+        self._main_card.set_title(title)
 
     @catch_and_notify(prefix="<b>Loading file: </b>")
     def external_file_update(self, file: bls.File):
@@ -309,15 +299,15 @@ class BlsFileInput(WidgetBase, PyComponent):
                 sizing_mode="stretch_width",
             )
 
-        self._update_header()
-        return CustomPMuiCard(
-            pmui.Column(
-                rw_toggle,
-                self.datagroup_selector_widget,
-                self.data_group_index_widget_with_tooltip,
-                self.parameter_selector_widget,
-            ),
-            title=self.name,
-            spinner=self.spinner,
-            sizing_mode="stretch_width",
-        )
+        self._main_card = CustomPMuiCard(
+                pmui.Column(
+                    rw_toggle,
+                    self.datagroup_selector_widget,
+                    self.data_group_index_widget_with_tooltip,
+                    self.parameter_selector_widget,
+                ),
+                title=self.name,
+                spinner=self.spinner,
+                sizing_mode="stretch_width",
+            )
+        return self._main_card

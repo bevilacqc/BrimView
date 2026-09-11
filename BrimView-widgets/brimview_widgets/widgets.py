@@ -4,8 +4,9 @@ import param
 
 
 def CustomPMuiCard(*objects, spinner=None, tooltip=None, title=None, **params):
+    title_typography = pmui.Typography(title or "", variant="h6")
     header = pn.Row(
-        pmui.Typography(title or "", variant="h6"),
+        title_typography,
         pn.Spacer(),
         sizing_mode="stretch_width",
         align="center",
@@ -14,7 +15,12 @@ def CustomPMuiCard(*objects, spinner=None, tooltip=None, title=None, **params):
         header.append(pn.widgets.TooltipIcon(value=tooltip))
     if spinner is not None:
         header.append(spinner)
-    return pmui.Card(*objects, header=header, **params)
+    card = pmui.Card(*objects, header=header, **params)
+    
+    # Add a method to set the title of the card dynamically
+    card.set_title = lambda title: setattr(title_typography, "object", title)
+
+    return card
 
 class SwitchWithLabels(pn.viewable.Viewer):
     label_true = param.String(default="On", doc="Label when switch is True")
