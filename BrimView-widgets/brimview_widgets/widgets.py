@@ -7,11 +7,13 @@ def CustomPMuiCard(*objects, spinner=None, tooltip=None, title=None, **params):
     header = pn.Row(
         pmui.Typography(title or "", variant="h6"),
         pn.Spacer(),
-        pn.widgets.TooltipIcon(value=tooltip) if tooltip else None,
-        spinner,
         sizing_mode="stretch_width",
         align="center",
     )
+    if tooltip is not None:
+        header.append(pn.widgets.TooltipIcon(value=tooltip))
+    if spinner is not None:
+        header.append(spinner)
     return pmui.Card(*objects, header=header, **params)
 
 class SwitchWithLabels(pn.viewable.Viewer):
